@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>計算書</title>
+
+<style>
+body {
+  font-family: sans-serif;
+  padding: 20px;
+}
+input, button {
+  font-size: 16px;
+  margin: 6px 0;
+  width: 100%;
+  max-width: 300px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>計算書</h2>
+
+S1: <input id="s1" type="number" step="any"><br>
+S2: <input id="s2" type="number" step="any"><br>
+Option: <input id="option" type="number" step="any"><br>
+
+<button onclick="calc()">計算・送信</button>
+
+<p>T = <span id="t"></span></p>
+
+<script>
+/* ========= GAS URL ========= */
+const GAS_URL = "ここにGASのURLを貼り付け";
+
+/* ========= 計算 ========= */
+function calc() {
+  const s1 = parseFloat(document.getElementById("s1").value);
+  const s2 = parseFloat(document.getElementById("s2").value);
+  const option = parseFloat(document.getElementById("option").value);
+
+  if (isNaN(s1) || isNaN(s2) || isNaN(option)) {
+    alert("すべて数値を入力してください");
+    return;
+  }
+
+  const T = (s1 - s2) / option;
+  const result = T.toFixed(2); // ★小数点2桁固定
+
+  document.getElementById("t").textContent = result;
+
+  sendToGAS(result);
+}
+
+/* ========= GASへ送信 ========= */
+function sendToGAS(value) {
+  fetch(GAS_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      value: value
+    })
+  })
+  .then(res => res.text())
+  .then(() => {
+    console.log("送信成功");
+  })
+  .catch(err => {
+    console.error("送信失敗", err);
+  });
+}
+</script>
+
+</body>
+</html>
