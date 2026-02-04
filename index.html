@@ -13,50 +13,48 @@ input, button { margin: 6px 0; width: 100%; max-width: 300px; }
 
 <h2>計算書</h2>
 
-B: <input id="b" type="number"><br>
-O: <input id="o" type="number"><br>
-T: <input id="t" type="number"><br>
+S1: <input id="s1" type="number"><br>
+S2: <input id="s2" type="number"><br>
+option: <input id="option" type="number"><br>
 
 <button onclick="calc()">計算して送信</button>
 
 <p>結果 T = <span id="result"></span></p>
 
 <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycby3-ZdsD32fl8yY-_U6KQqPQ3-YOPi0n2gpKGCtlsYaxt6vNN9Bq4Q8Hak4wvXtDI5o6A/exec";
+const GAS_URL =
+  "【成功しているGASのURL】";
 
 function calc() {
-  const b = parseFloat(document.getElementById("b").value);
-  const o = parseFloat(document.getElementById("o").value);
-  const t = parseFloat(document.getElementById("t").value);
+  const s1 = parseFloat(document.getElementById("s1").value);
+  const s2 = parseFloat(document.getElementById("s2").value);
+  const option = parseFloat(document.getElementById("option").value);
 
-  if (isNaN(b) || isNaN(o) || isNaN(t)) {
-    alert("数値をすべて入力してください");
+  if (isNaN(s1) || isNaN(s2) || isNaN(option) || option === 0) {
+    alert("数値を正しく入力してください");
     return;
   }
 
-  const T = (b - o * t).toFixed(2);
+  // (S1 - S2) / option = T
+  const T = ((s1 - s2) / option).toFixed(2);
   document.getElementById("result").textContent = T;
 
-  const callbackName = "cb_" + Date.now();
-  window[callbackName] = function(res) {
-    if (res.status === "ok") {
-      console.log("送信成功");
-    }
-    delete window[callbackName];
-  };
-
+  // ★ 成功実績のある送信方式を完全に維持
   const script = document.createElement("script");
   script.src =
     GAS_URL +
-    "?t=" + encodeURIComponent(T) +
-    "&callback=" + callbackName;
+    "?numbers=" + encodeURIComponent(T) +
+    "&callback=handleResponse";
 
   document.body.appendChild(script);
+}
+
+function handleResponse(res) {
+  if (res.status === "ok") {
+    console.log("記録成功");
+  }
 }
 </script>
 
 </body>
 </html>
-
-
-
