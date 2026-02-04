@@ -3,55 +3,47 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>計算結果送信</title>
+<title>計算書</title>
 <style>
-  body { font-family: sans-serif; padding: 20px; }
-  input, button {
-    font-size: 16px;
-    padding: 6px;
-    margin: 6px 0;
-    width: 100%;
-    max-width: 300px;
-  }
+body { font-family: sans-serif; padding: 20px; }
+input, button { margin: 6px 0; width: 100%; max-width: 300px; }
 </style>
 </head>
 <body>
 
 <h2>計算書</h2>
 
-S1: <input id="s1" type="number"><br>
-S2: <input id="s2" type="number"><br>
-option: <input id="option" type="number"><br>
+S1: <input id="b" type="number"><br>
+S2: <input id="o" type="number"><br>
+option: <input id="t" type="number"><br>
 
 <button onclick="calc()">計算して送信</button>
 
 <p>結果 T = <span id="result"></span></p>
 
 <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbz_DnkWxJnwtC8PhwuNWlrRsAelKWGMXX8QHKT6w_KebNE9e6jthZBMeSpVu_3rn--SIA/exec";
+const GAS_URL = "【ここにGASのURL】";
 
 function calc() {
-  const s1 = parseFloat(document.getElementById("s1").value);
-  const s2 = parseFloat(document.getElementById("s2").value);
-  const option = parseFloat(document.getElementById("option").value);
+  const b = parseFloat(document.getElementById("b").value);
+  const o = parseFloat(document.getElementById("o").value);
+  const t = parseFloat(document.getElementById("t").value);
 
-  // 成功例と同じ構造、計算式だけ差し替え
-  const T = ((s1 - s2) / option).toFixed(2);
+  const T = ((b - o) / t).toFixed(2);
   document.getElementById("result").textContent = T;
+
+  const callbackName = "cb_" + Date.now();
+  window[callbackName] = function(res) {
+    delete window[callbackName];
+  };
 
   const script = document.createElement("script");
   script.src =
     GAS_URL +
-    "?numbers=" + encodeURIComponent(T) +
-    "&callback=handleResponse";
+    "?t=" + encodeURIComponent(T) +
+    "&callback=" + callbackName;
 
   document.body.appendChild(script);
-}
-
-function handleResponse(res) {
-  if (res.status === "ok") {
-    console.log("記録成功");
-  }
 }
 </script>
 
