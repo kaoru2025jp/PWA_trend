@@ -2,53 +2,92 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>計算書</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>計算送信（S1 - S2 / option）</title>
+
 <style>
-body { font-family: sans-serif; padding: 20px; }
-input, button { margin: 6px 0; width: 100%; max-width: 300px; }
+  body {
+    font-family: sans-serif;
+    padding: 20px;
+    line-height: 1.6;
+  }
+  input, button {
+    font-size: 16px;
+    padding: 6px;
+    margin: 6px 0;
+    width: 100%;
+    max-width: 300px;
+  }
+  .result {
+    margin-top: 10px;
+    font-weight: bold;
+  }
 </style>
 </head>
+
 <body>
 
-<h2>計算書</h2>
+<h2>計算フォーム</h2>
 
-B: <input id="b" type="number"><br>
-O: <input id="o" type="number"><br>
-T: <input id="t" type="number"><br>
+<label>S1</label><br>
+<input id="s1" type="number" step="any"><br>
 
-<button onclick="calc()">計算して送信</button>
+<label>S2</label><br>
+<input id="s2" type="number" step="any"><br>
 
-<p>結果 T = <span id="result"></span></p>
+<label>option</label><br>
+<input id="option" type="number" step="any"><br>
+
+<button onclick="calculateAndSend()">計算して送信</button>
+
+<div class="result">
+  T = <span id="result">---</span>
+</div>
 
 <script>
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyKi1wnv0bCpHfaSnalUZ_zfwfTeldfulF55U2OVbS0cVmPnil9u1k_6HybRQIxKdDrSg/exec";
+/* ========= GAS URL ========= */
+const GAS_URL =
+  "https://script.google.com/macros/s/AKfycbw5LuaEUOPgxJTjdC1wEGUKaVCPVnm1yiVpIltegdxWQ-ud6NoZgYIjGGWAOs6gyKDqww/exec";
 
-function calc() {
-  const b = parseFloat(document.getElementById("b").value);
-  const o = parseFloat(document.getElementById("o").value);
-  const t = parseFloat(document.getElementById("t").value);
+/* ========= 計算 & 送信 ========= */
+function calculateAndSend() {
+  const s1 = parseFloat(document.getElementById("s1").value);
+  const s2 = parseFloat(document.getElementById("s2").value);
+  const option = parseFloat(document.getElementById("option").value);
 
-  if (isNaN(b) || isNaN(o) || isNaN(t)) {
-    alert("数値をすべて入力してください");
+  if (isNaN(s1) || isNaN(s2) || isNaN(option)) {
+    alert("すべて数値を入力してください");
     return;
   }
 
-  const T = (b - o * t).toFixed(2);
-  document.getElementById("result").textContent = T;
+  if (option === 0) {
+    alert("option は 0 にできません");
+    return;
+  }
 
-  const callbackName = "cb_" + Date.now();
-  window[callbackName] = function(res) {
+  // ★ 計算式を明示的に固定
+  const T = s1 - (s2 / option);
+
+  // 小数点2桁
+  const fixedT = T.toFixed(2);
+  document.getElementById("result").textContent = fixedT;
+
+  // JSONP 送信
+  const callbackName = "jsonp_callback_" + Date.now();
+  const script = document.createElement("script");
+
+  window[callbackName] = function (res) {
+    delete window[callbackName];
+    document.body.removeChild(script);
+
     if (res.status === "ok") {
       console.log("送信成功");
     }
-    delete window[callbackName];
   };
 
-  const script = document.createElement("script");
   script.src =
     GAS_URL +
-    "?t=" + encodeURIComponent(T) +
+    "?value=" + encodeURIComponent(fixedT) +
     "&callback=" + callbackName;
 
   document.body.appendChild(script);
