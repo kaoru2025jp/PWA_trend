@@ -1,1 +1,98 @@
-https://script.google.com/macros/s/AKfycbzrFKgNHTkLqrZzwS4ndg_10QpWHBOP-lF-WMqty5Xde4p_FNYY9BS16YDWyvqtOTpTEw/exec
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>計算送信（(S1 - S2) / option）</title>
+
+<style>
+  body {
+    font-family: sans-serif;
+    padding: 20px;
+    line-height: 1.6;
+  }
+  input, button {
+    font-size: 16px;
+    padding: 6px;
+    margin: 6px 0;
+    width: 100%;
+    max-width: 320px;
+  }
+  .result {
+    margin-top: 12px;
+    font-weight: bold;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>計算フォーム</h2>
+
+<label>S1</label><br>
+<input id="s1" type="number" step="any"><br>
+
+<label>S2</label><br>
+<input id="s2" type="number" step="any"><br>
+
+<label>option</label><br>
+<input id="option" type="number" step="any"><br>
+
+<button onclick="calculateAndSend()">計算して送信</button>
+
+<div class="result">
+  T = <span id="result">---</span>
+</div>
+
+<script>
+/* ========= GAS URL ========= */
+const GAS_URL =
+  "https://script.google.com/macros/s/AKfycbxhOaxDjknvSqNkiSsmioH8BaFxtm-lTJnNZBjLXdO2UHC450s0xUpfRh3Q_c2u4HaZkg/exec";
+
+/* ========= 計算 & 送信 ========= */
+function calculateAndSend() {
+  const s1 = parseFloat(document.getElementById("s1").value);
+  const s2 = parseFloat(document.getElementById("s2").value);
+  const option = parseFloat(document.getElementById("option").value);
+
+  if (isNaN(s1) || isNaN(s2) || isNaN(option)) {
+    alert("すべて数値を入力してください");
+    return;
+  }
+
+  if (option === 0) {
+    alert("option は 0 にできません");
+    return;
+  }
+
+  // ★ 計算式を厳密に固定
+  const T = (s1 - s2) / option;
+
+  // 小数点2桁に固定
+  const fixedT = T.toFixed(2);
+  document.getElementById("result").textContent = fixedT;
+
+  // JSONP 送信（成功事例と同型）
+  const callbackName = "jsonp_callback_" + Date.now();
+  const script = document.createElement("script");
+
+  window[callbackName] = function (res) {
+    delete window[callbackName];
+    document.body.removeChild(script);
+
+    if (res.status === "ok") {
+      console.log("送信成功");
+    }
+  };
+
+  script.src =
+    GAS_URL +
+    "?value=" + encodeURIComponent(fixedT) +
+    "&callback=" + callbackName;
+
+  document.body.appendChild(script);
+}
+</script>
+
+</body>
+</html>
